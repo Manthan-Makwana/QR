@@ -86,6 +86,41 @@ export default function QRGenerator({ showToast, onSaveHistory, loadedItem }) {
   const canvasRef = useRef(null);
   const qrCodeRef = useRef(null);
 
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('aero_qr_profile_draft');
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        if (draft.name) setProfileName(draft.name);
+        if (draft.title) setProfileTitle(draft.title);
+        if (draft.bio) setProfileBio(draft.bio);
+        if (draft.phone) setProfilePhone(draft.phone);
+        if (draft.email) setProfileEmail(draft.email);
+        if (draft.map) setProfileMaps(draft.map);
+        if (draft.socials) setProfileSocials(draft.socials);
+        if (draft.avatar) setProfileAvatar(draft.avatar);
+      } catch (e) {
+        console.error("Draft load error", e);
+      }
+    }
+  }, []);
+
+  // Save profile draft to localStorage on state changes
+  useEffect(() => {
+    const draft = {
+      name: profileName,
+      title: profileTitle,
+      bio: profileBio,
+      phone: profilePhone,
+      email: profileEmail,
+      map: profileMaps,
+      socials: profileSocials,
+      avatar: profileAvatar
+    };
+    localStorage.setItem('aero_qr_profile_draft', JSON.stringify(draft));
+  }, [profileName, profileTitle, profileBio, profilePhone, profileEmail, profileMaps, profileSocials, profileAvatar]);
+
   // Initialize QR instance once
   useEffect(() => {
     const config = getQRConfig();
@@ -333,17 +368,17 @@ END:VCARD`;
     const file = e.target.files[0];
     if (!file) return;
 
-    // Shrink image down to base64 jpeg
+    // Shrink image down to base64 jpeg (32x32 at 0.4 quality to keep QR code highly scannable)
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = 48;
-        canvas.height = 48;
+        canvas.width = 32;
+        canvas.height = 32;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, 48, 48);
-        setProfileAvatar(canvas.toDataURL('image/jpeg', 0.6));
+        ctx.drawImage(img, 0, 0, 32, 32);
+        setProfileAvatar(canvas.toDataURL('image/jpeg', 0.4));
       };
       img.src = ev.target.result;
     };
