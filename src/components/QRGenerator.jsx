@@ -218,7 +218,10 @@ export default function QRGenerator({ showToast, onSaveHistory, loadedItem }) {
         const jsonStr = JSON.stringify(profileObj);
         const utf8SafeBase64 = btoa(unescape(encodeURIComponent(jsonStr)));
         const urlSafeBase64 = utf8SafeBase64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        return `${window.location.origin}${window.location.pathname}?profile=${urlSafeBase64}`;
+        const origin = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? 'https://qr-alpha-amber.vercel.app'
+          : window.location.origin;
+        return `${origin}${window.location.pathname}?profile=${urlSafeBase64}`;
       case 'vcard':
         return `BEGIN:VCARD
 VERSION:3.0
