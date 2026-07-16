@@ -128,7 +128,7 @@ END:VCARD`;
         )}
 
         <div className="profile-footer">
-          <p>Powered by <a href="/">AeroQR Toolkit</a></p>
+          <p>Powered by <a href="/">Raghunandan InfoTech</a></p>
         </div>
       </div>
     </div>
