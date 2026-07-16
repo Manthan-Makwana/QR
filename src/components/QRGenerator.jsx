@@ -99,7 +99,13 @@ export default function QRGenerator({ showToast, onSaveHistory, loadedItem }) {
         if (draft.email) setProfileEmail(draft.email);
         if (draft.map) setProfileMaps(draft.map);
         if (draft.socials) setProfileSocials(draft.socials);
-        if (draft.avatar) setProfileAvatar(draft.avatar);
+        if (draft.avatar) {
+          if (draft.avatar.length > 2500) {
+            console.warn("Discarded old uncompressed draft avatar.");
+          } else {
+            setProfileAvatar(draft.avatar);
+          }
+        }
       } catch (e) {
         console.error("Draft load error", e);
       }
@@ -180,7 +186,13 @@ export default function QRGenerator({ showToast, onSaveHistory, loadedItem }) {
           setProfileEmail(p.email);
           setProfileMaps(p.map);
           setProfileSocials(p.socials || {});
-          if (p.avatar) setProfileAvatar(p.avatar);
+          if (p.avatar) {
+            if (p.avatar.length > 2500) {
+              console.warn("Skipping legacy uncompressed history avatar.");
+            } else {
+              setProfileAvatar(p.avatar);
+            }
+          }
         } catch (e) {
           console.error("Decode fail", e);
         }
@@ -213,16 +225,21 @@ export default function QRGenerator({ showToast, onSaveHistory, loadedItem }) {
   useEffect(() => {
     if (!qrCodeRef.current) return;
 
-    const data = getFormattedQRData();
-    const config = getQRConfig(data);
-    
-    // Update live QR
-    qrCodeRef.current.update(config);
+    try {
+      const data = getFormattedQRData();
+      const config = getQRConfig(data);
+      
+      // Update live QR
+      qrCodeRef.current.update(config);
 
-    // Dynamic glow adjustment
-    const glow = document.getElementById('canvas-glow');
-    if (glow) {
-      glow.style.background = isGradient ? colorGrad1 : colorForeground;
+      // Dynamic glow adjustment
+      const glow = document.getElementById('canvas-glow');
+      if (glow) {
+        glow.style.background = isGradient ? colorGrad1 : colorForeground;
+      }
+    } catch (e) {
+      console.error("QR Code rendering failed:", e);
+      showToast("Content is too long for the QR code! Please shorten your text.", "danger");
     }
   }, [
     activeType, urlVal, profileName, profileTitle, profileBio, profilePhone, profileEmail, profileMaps, profileSocials, profileAvatar,
